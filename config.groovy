@@ -1,0 +1,3 @@
+nkjp {
+    path = "nkjp"
+}
