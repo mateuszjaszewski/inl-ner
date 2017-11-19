@@ -1,5 +1,7 @@
 package pl.pjatk.mj
 
+import groovy.json.JsonBuilder
+import groovy.json.StringEscapeUtils
 import pl.pjatk.mj.processor.NkjpProcessor
 
 /**
@@ -18,6 +20,11 @@ class Application {
     private static void processNkjp() {
         NkjpProcessor processor = new NkjpProcessor()
         processor.process()
+
+        def file = new File(config.data.training.file as String)
+        file.getParentFile().mkdirs()
+        file.createNewFile()
+        file.write(StringEscapeUtils.unescapeJavaScript(new JsonBuilder(processor.getTrainingData()).toPrettyString()))
     }
 
     private static void loadConfig() {

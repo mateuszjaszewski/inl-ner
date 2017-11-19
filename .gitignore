@@ -1,4 +1,6 @@
 nkjp
+nkjp_small_part
 target
 *.iml
 .idea
+data

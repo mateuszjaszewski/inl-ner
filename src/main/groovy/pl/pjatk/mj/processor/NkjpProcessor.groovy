@@ -1,69 +1,90 @@
 package pl.pjatk.mj.processor
 
-import pl.pjatk.mj.Application
+import pl.pjatk.mj.model.Tag
 
-import static org.apache.commons.lang3.StringUtils.substringAfter
+import static org.apache.commons.lang3.StringUtils.substringAfterLast
 import static org.apache.commons.lang3.StringUtils.substringBetween
+import static pl.pjatk.mj.Application.config
 /**
  * Created by Mateusz Jaszewski on 18.11.2017.
  */
 class NkjpProcessor {
 
     private XmlSlurper xmlSlurper
+    private List texts = []
 
-
+    List trainingData
+    List devData
+    List testData
 
     NkjpProcessor() {
         xmlSlurper = new XmlSlurper()
     }
 
     void process() {
-        File direcotry = new File(Application.config.nkjp.path as String)
+        File directory = new File(config.nkjp.path as String)
 
-        if (!direcotry.isDirectory()) {
+        if (!directory.isDirectory()) {
             throw new IllegalArgumentException("Given path is not directory")
         }
 
-        direcotry.eachDir {
+        def counter = 0
+        def dirsCount = directory.listFiles( { return it.isDirectory() } as FileFilter ).size()
+        directory.eachDir {
+            counter++
+            println "Processing ${it.name} - $counter / $dirsCount"
             processDirectory(it)
         }
+        println "Loaded ${texts.size()} texts"
+
+        Collections.shuffle(texts)
+
+        int trainingOffset = 0
+        int devOffset = texts.size() * config.data.training.percent
+        int testOffset = texts.size() * (config.data.training.percent + config.data.dev.percent)
+
+        trainingData = texts[trainingOffset..<devOffset]
+        devData = texts[devOffset..<testOffset]
+        testData = texts[testOffset..<texts.size()]
     }
 
+
     private void processDirectory(File directory) {
-        def texts = loadText(directory.path)
-        def segments = loadSegmentation(directory.path)
-        def named = loadNamed(directory.path)
-        //def morphosyntaxs = loadMorphosyntax(directory.path)
-        println named.size()
+        def textMap = loadText(directory.path)
+        def namedMap = loadNamed(directory.path)
+        loadSegmentation(textMap, namedMap, directory.path)
+        texts.addAll(textMap.values())
     }
 
     private Map loadText(String path) {
         def root = xmlSlurper.parse(new File(path + File.separator + "text.xml" as String))
         Map texts = [:]
-
         root.TEI.text.body.div.each {
             it.ab.each {
-                texts.put(it."@xml:id", it.text())
-            }
-        }
-
-        return texts
-    }
-
-    private Map loadSegmentation(String path) {
-        def root = xmlSlurper.parse(new File(path + File.separator + "ann_segmentation.xml" as String))
-        Map segments = [:]
-        root.TEI.text.body.p.each {
-            it.s.seg.each {
-                def (textId, begin, end) = substringBetween(it.@corresp as String,"(", ")").split(",")
-                segments.put(it."@xml:id", [
-                    textId: textId,
-                    begin: begin as Integer,
-                    end: end as Integer
+                texts.put(it."@xml:id".text(), [
+                        text: it.text(),
+                        segments: []
                 ])
             }
         }
-        return segments
+        return texts
+    }
+
+    private void loadSegmentation(Map textMap, Map namedMap, String path) {
+        def root = xmlSlurper.parse(new File(path + File.separator + "ann_segmentation.xml" as String))
+        root.TEI.text.body.p.each {
+            it.s.seg.each {
+                def (textId, begin, length) = substringBetween(it.@corresp as String,"(", ")").split(",")
+                def segmentKey = substringAfterLast(it."@xml:id" as String, "segm_")
+                def textEntry = textMap.get(textId)
+                textEntry.segments.add([
+                    begin: begin as Integer,
+                    length: length as Integer,
+                    value: textEntry.text.substring(begin.toInteger(), begin.toInteger() + length.toInteger()),
+                    symbol: namedMap.get(segmentKey) ?: Tag.OTHER
+                ])
+            }
+        }
     }
 
     private Map loadNamed(String path) {
@@ -75,11 +96,15 @@ class NkjpProcessor {
         Map named = [:]
         root.TEI.text.body.p.each {
             it.s.each {
-                def segmentId = "segm" + substringAfter(it.@corresp as String, "#")
-                def f = it.seg.fs.f.find { it.@name = "type" }
-                def tag = f.symbol.@value
-                if (tag != "") {
-                    named.put(segmentId, tag)
+                it.seg.each {
+                    def f = it.fs.f.find { it.@name = "type" }
+                    def tag = Tag.of(f.symbol.@value as String)
+                    it.ptr.each {
+                        def segmentKey = substringAfterLast(it.@target as String, "#morph_")
+                        if (tag != "" && segmentKey != "") {
+                            named.put(segmentKey, tag)
+                        }
+                    }
                 }
             }
         }
