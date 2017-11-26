@@ -1,5 +1,5 @@
 nkjp {
-    path = "nkjp_test"
+    directory = "nkjp"
 }
 data {
     training {
@@ -13,5 +13,13 @@ data {
     test {
         file = "data/test.json"
         percent = 0.1
+    }
+}
+crf {
+    model {
+        file = "crf/crf.model"
+    }
+    temp {
+        directory = "crf/temp"
     }
 }

@@ -1,5 +1,6 @@
 package pl.pjatk.mj.processor
 
+import groovy.json.JsonBuilder
 import pl.pjatk.mj.model.Tag
 
 import static org.apache.commons.lang3.StringUtils.substringAfterLast
@@ -22,7 +23,7 @@ class NkjpProcessor {
     }
 
     void process() {
-        File directory = new File(config.nkjp.path as String)
+        File directory = new File(config.nkjp.directory as String)
 
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("Given path is not directory")
@@ -46,8 +47,18 @@ class NkjpProcessor {
         trainingData = texts[trainingOffset..<devOffset]
         devData = texts[devOffset..<testOffset]
         testData = texts[testOffset..<texts.size()]
+
+        saveToFile(config.data.training.file as String, trainingData)
+        saveToFile(config.data.dev.file as String, devData)
+        saveToFile(config.data.test.file as String, testData)
     }
 
+    private void saveToFile(String path, List data) {
+        def file = new File(path)
+        file.getParentFile().mkdirs()
+        file.createNewFile()
+        file.write(new JsonBuilder(data).toPrettyString())
+    }
 
     private void processDirectory(File directory) {
         def textMap = loadText(directory.path)
@@ -81,7 +92,7 @@ class NkjpProcessor {
                     begin: begin as Integer,
                     length: length as Integer,
                     value: textEntry.text.substring(begin.toInteger(), begin.toInteger() + length.toInteger()),
-                    symbol: namedMap.get(segmentKey) ?: Tag.OTHER
+                    tag: namedMap.get(segmentKey) ?: Tag.OTHER
                 ])
             }
         }
@@ -110,5 +121,4 @@ class NkjpProcessor {
         }
         return named
     }
-
 }
