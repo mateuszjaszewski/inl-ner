@@ -26,8 +26,10 @@ class FeatureGenerator {
                 lengthFeature(word, index),
                 startsWithUppercaseFeature(word, index),
                 allLettersUppercaseFeature(word, index),
+                allLettersLowercaseFeature(word, index),
                 isEndOfSentenceFeature(word, index),
-                firstLetterFeature(word, index),
+                containsMoreThanOneUppercaseLetterFeature(word, index),
+                //firstLetterFeature(word, index),
                 lastLetterFeature(word, index)
         ]
     }
@@ -44,15 +46,20 @@ class FeatureGenerator {
         return "ALU[$index]=${word.matches("([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+")}"
     }
 
-    private static String isEndOfSentenceFeature(String word, Integer index) {
-        return "EOS[$index]=${word == "." || word == "?" || word == "!"}"
+    private static String containsMoreThanOneUppercaseLetterFeature(String word, Integer index) {
+        return "MTOU[$index]=${word.matches("([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+.*([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+")}"
     }
 
-    private static String firstLetterFeature(String word, Integer index) {
-        return "FL[$index]=${word[0]}"
+    private static String allLettersLowercaseFeature(String word, Integer index) {
+        return "ALL[$index]=${word.matches("([a-z]|ą|ę|ć|ś|ź|ż|ł|ó|ń)+")}"
+    }
+
+    private static String isEndOfSentenceFeature(String word, Integer index) {
+        return "EOS[$index]=${word == "." || word == "?" || word == "!"}"
     }
 
     private static String lastLetterFeature(String word, Integer index) {
         return "LL[$index]=${word[word.length() - 1]}"
     }
+
 }

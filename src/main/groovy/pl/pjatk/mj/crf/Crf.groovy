@@ -12,12 +12,14 @@ import static pl.pjatk.mj.Application.config
 class Crf {
 
     private File tempDirectory
+    private TextSplitter textSplitter
     private FeatureGenerator featureGenerator
 
     Crf() {
         tempDirectory = new File(config.crf.temp.directory as String)
         tempDirectory.mkdirs()
         featureGenerator = new FeatureGenerator()
+        textSplitter = new TextSplitter()
     }
 
     void train() {
@@ -35,12 +37,11 @@ class Crf {
         trainingTexts.each {
             List segments = it.segments
             for (def i = 0; i < segments.size(); i++) {
-
                 String tag = segments[i].tag
 
-                String previous = i - 1 > 0 ? segments[i].value : null
+                String previous = i - 1 > 0 ? segments[i - 1].value : null
                 String current = segments[i].value
-                String next = i + 1 < segments.size() ? segments[i].value : null
+                String next = i + 1 < segments.size() ? segments[i + 1].value : null
 
                 String features = featureGenerator.generateFeatures(previous, current, next)
                 printWriter.println("$tag\t$features")
@@ -53,17 +54,17 @@ class Crf {
         CrfTrainer.train(crfTrainingFile.path, config.crf.model.file as String)
     }
 
-    void tag(String text) {
+    List tag(String text) {
         File fileToTag = new File(tempDirectory.path + File.separator + "text.txt")
         fileToTag.createNewFile()
         PrintWriter printWriter = new PrintWriter(fileToTag)
 
-        List words = text.split("\\s+|(?=\\p{Punct})|(?<=\\p{Punct})")
+        List segments = textSplitter.splitText(text)
 
-        for (def i = 0; i < words.size(); i++) {
-            String previous = i - 1 > 0 ? words[i] : null
-            String current = words[i]
-            String next = i + 1 < words.size() ? words[i] : null
+        for (def i = 0; i < segments.size(); i++) {
+            String previous = i - 1 > 0 ? segments[i - 1].value : null
+            String current = segments[i].value
+            String next = i + 1 < segments.size() ? segments[i + 1].value : null
 
             String features = featureGenerator.generateFeatures(previous, current, next)
             printWriter.println(features)
@@ -75,11 +76,11 @@ class Crf {
         CrfTagger tagger = new CrfTagger(config.crf.model.file as String)
         List<List<Pair<String, Double>>> tagProbLists = tagger.tag(fileToTag.path)
 
-        for (def i = 0; i < words.size(); i++) {
-            println(words[i] + " " + tagProbLists[0][i].first)
+        for (def i = 0; i < tagProbLists[0].size(); i++) {
+            segments[i].tag = tagProbLists[0][i].first
         }
 
-
+        return segments
     }
 
 }
