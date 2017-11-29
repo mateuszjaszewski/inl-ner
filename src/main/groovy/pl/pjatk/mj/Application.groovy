@@ -1,7 +1,9 @@
 package pl.pjatk.mj
 
 import com.github.jcrfsuite.util.CrfSuiteLoader
+import groovy.json.JsonSlurper
 import pl.pjatk.mj.crf.Crf
+import pl.pjatk.mj.crf.StatsCalculator
 import pl.pjatk.mj.processor.NkjpProcessor
 /**
  * Created by Mateusz Jaszewski on 18.11.2017.
@@ -14,28 +16,28 @@ class Application {
         CrfSuiteLoader.load()
         loadConfig()
 
-        //FeatureGenerator generator = new FeatureGenerator()
-        //println(generator.generateFeatures("ĘbawdN", "ĄŻŹŁ", "."))
+        Crf crf = new Crf()
+        crf.train()
 
-        //processNkjp()
+        testOnDevData()
+    }
+
+    private static void testOnDevData() {
+        JsonSlurper jsonSlurper = new JsonSlurper()
+        List devData = jsonSlurper.parse(new File(config.data.dev.file as String)) as List
+
+        List texts = devData.collect { it.text }
 
         Crf crf = new Crf()
-        //crf.train()
-        List results = crf.tag("Stefan Żeromski to autor Lalki. Innym przykładem może być Julian Tuwim który tworzył w Toruniu. " +
-                "Donald Tusk przyjechał do Warszawy spotkać się z prezesem Jarosławem Kaczyńskim." +
-                "Spotkanie odbyło się na Warszawskim Bemowie. IPN to jedna z organizacji. Microsoft to również organizacja. " +
-                "Dobrym przykłądem organizacji jest AZS, albo Rada Miasta")
+        List results = crf.tag(texts)
 
+        StatsCalculator statsCalculator = new StatsCalculator()
+        def stats = statsCalculator.calculateStats(results, devData)
 
-      /*  List results = crf.tag("Do zatrzymania doszło w piątek. Zatrzymanemu odczytano decyzję FSB z 21 listopada br. o konieczności opuszczenia terytorium Federacji Rosyjskiej w ciągu 24 godzin od daty jej otrzymania, pod groźbą przymusowej deportacji. Decyzja FSB, bez wskazania merytorycznego powodu wydalenia oraz możliwości odwołania, oznacza jednocześnie zakaz ponownego wjazdu na terytorium Rosji - podał w komunikacie IPN." +
-                "Henryk Głębocki przyjechał do Rosji 14 listopada, by kontynuować prowadzone od 1993 r. badania zbiorów archiwalnych i bibliotecznych w zakresie relacji polsko-rosyjskich w wieku XIX-XX. Jak dodaje IPN, właśnie temu zagadnieniu historyk czemu poświęcił znaczą część swoich prac naukowych.")
-*/
-
-        results.each {
-            println(it.value + " " + it.tag)
-        }
-
+        println(stats)
     }
+
+
 
     private static void processNkjp() {
         NkjpProcessor processor = new NkjpProcessor()

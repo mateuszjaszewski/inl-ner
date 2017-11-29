@@ -25,41 +25,64 @@ class FeatureGenerator {
         return [
                 lengthFeature(word, index),
                 startsWithUppercaseFeature(word, index),
+                endsWithUppercaseFeature(word, index),
                 allLettersUppercaseFeature(word, index),
                 allLettersLowercaseFeature(word, index),
                 isEndOfSentenceFeature(word, index),
                 containsMoreThanOneUppercaseLetterFeature(word, index),
-                //firstLetterFeature(word, index),
-                lastLetterFeature(word, index)
-        ]
+                lastLetterFeature(word, index),
+                last2LettersFeature(word, index),
+                last3LettersFeature(word, index),
+                containsDigitFeature(word, index)
+        ].findAll {it != null}
     }
 
     private static String lengthFeature(String word, Integer index) {
-        return "LEN[$index]=${word.length()}"
+        return "length[$index]=${word.length()}"
     }
 
     private static String startsWithUppercaseFeature(String word, Integer index) {
-        return "SWU[$index]=${word.substring(0, 1).matches("[A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń")}"
+        return "startsWithUpper[$index]=${word[0..0].matches("[A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń")}"
+    }
+
+    private static String endsWithUppercaseFeature(String word, Integer index) {
+        return "endsWithUpper[$index]=${word[-1..-1].matches("[A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń")}"
     }
 
     private static String allLettersUppercaseFeature(String word, Integer index) {
-        return "ALU[$index]=${word.matches("([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+")}"
+        return "allLettersUpper[$index]=${word.matches("([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+")}"
     }
 
     private static String containsMoreThanOneUppercaseLetterFeature(String word, Integer index) {
-        return "MTOU[$index]=${word.matches("([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+.*([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+")}"
+        return "moreThanOneLetterIsUpper[$index]=${word.matches("([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+.*([A-Z]|Ą|Ę|Ć|Ś|Ź|Ż|Ł|Ó|Ń)+")}"
     }
 
     private static String allLettersLowercaseFeature(String word, Integer index) {
-        return "ALL[$index]=${word.matches("([a-z]|ą|ę|ć|ś|ź|ż|ł|ó|ń)+")}"
+        return "allLettersLowercase[$index]=${word.matches("([a-z]|ą|ę|ć|ś|ź|ż|ł|ó|ń)+")}"
     }
 
     private static String isEndOfSentenceFeature(String word, Integer index) {
-        return "EOS[$index]=${word == "." || word == "?" || word == "!"}"
+        return "endOfSentence[$index]=${word == "." || word == "?" || word == "!"}"
     }
 
     private static String lastLetterFeature(String word, Integer index) {
-        return "LL[$index]=${word[word.length() - 1]}"
+        return "lastLetter[$index]=${word[-1..-1]}"
+    }
+
+    private static String last2LettersFeature(String word, Integer index) {
+        if (word.size() >= 2) {
+            return "last2Letters[$index]=${word[-2..-1]}"
+        }
+    }
+
+    private static String last3LettersFeature(String word, Integer index) {
+        if (word.size() >= 3) {
+            return "last3Letters[$index]=${word[-3..-1]}"
+        }
+    }
+
+    private static String containsDigitFeature(String word, Integer index) {
+        return "containsDigit[$index]=${word.matches(".*[0-9].*")}"
     }
 
 }
