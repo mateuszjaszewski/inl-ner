@@ -8,6 +8,11 @@
     <artifactId>inl-ner</artifactId>
     <name>inl-ner project</name>
     <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -25,6 +30,11 @@
             <artifactId>jcrfsuite</artifactId>
             <version>0.6.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy.modules.http-builder</groupId>
+            <artifactId>http-builder</artifactId>
+            <version>0.6</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -35,6 +45,7 @@
                 <version>1.6</version>
                 <executions>
                     <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>addSources</goal>
                             <goal>addTestSources</goal>
@@ -54,19 +65,35 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>pl.pjatk.mj.Application</mainClass>
+                        </manifest>
+                    </archive>
+                    <outputDirectory>
+                        ${project.basedir}
+                    </outputDirectory>
+                    <finalName>
+                        ${project.artifactId}
+                    </finalName>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>jar-no-fork</goal>
-                            <goal>test-jar-no-fork</goal>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>

@@ -4,6 +4,7 @@ import com.github.jcrfsuite.CrfTagger
 import com.github.jcrfsuite.CrfTrainer
 import com.github.jcrfsuite.util.Pair
 import groovy.json.JsonSlurper
+import pl.pjatk.mj.common.TextSplitter
 
 import static pl.pjatk.mj.Application.config
 /**
@@ -52,15 +53,15 @@ class Crf {
     }
 
     List tag(List texts) {
-        List results = []
-        texts.forEach {
-            results.add(tag(it as String))
+        int count
+        return texts.collect() {
+            println("CRF - tagging ${++count} of ${texts.size()} texts")
+            tag(it as String)
         }
-        return results
     }
 
     private File prepareCrfSuiteFile(List texts, boolean attacheTag) {
-        File crfTrainingFile = new File(tempDirectory.path + UUID.randomUUID().toString() + ".txt")
+        File crfTrainingFile = new File(tempDirectory.path + File.separator +  UUID.randomUUID().toString() + ".txt")
         crfTrainingFile.createNewFile()
         PrintWriter printWriter = new PrintWriter(crfTrainingFile)
 

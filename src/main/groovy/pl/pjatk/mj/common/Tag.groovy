@@ -1,4 +1,4 @@
-package pl.pjatk.mj.model
+package pl.pjatk.mj.common
 
 /**
  * Created by Mateusz Jaszewski on 18.11.2017.

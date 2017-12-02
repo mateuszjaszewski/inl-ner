@@ -23,7 +23,6 @@ class FeatureGenerator {
 
     private static List featuresForWord(String word, Integer index) {
         return [
-                lengthFeature(word, index),
                 startsWithUppercaseFeature(word, index),
                 endsWithUppercaseFeature(word, index),
                 allLettersUppercaseFeature(word, index),
@@ -35,10 +34,6 @@ class FeatureGenerator {
                 last3LettersFeature(word, index),
                 containsDigitFeature(word, index)
         ].findAll {it != null}
-    }
-
-    private static String lengthFeature(String word, Integer index) {
-        return "length[$index]=${word.length()}"
     }
 
     private static String startsWithUppercaseFeature(String word, Integer index) {

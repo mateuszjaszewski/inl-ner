@@ -1,11 +1,12 @@
 package pl.pjatk.mj.processor
 
-import groovy.json.JsonBuilder
-import pl.pjatk.mj.model.Tag
+import pl.pjatk.mj.common.Tag
 
 import static org.apache.commons.lang3.StringUtils.substringAfterLast
 import static org.apache.commons.lang3.StringUtils.substringBetween
 import static pl.pjatk.mj.Application.config
+import static pl.pjatk.mj.common.Utils.saveJsonToFile
+
 /**
  * Created by Mateusz Jaszewski on 18.11.2017.
  */
@@ -33,7 +34,7 @@ class NkjpProcessor {
         def dirsCount = directory.listFiles( { return it.isDirectory() } as FileFilter ).size()
         directory.eachDir {
             counter++
-            println "Processing ${it.name} - $counter / $dirsCount"
+            println "Processing NKJP ${it.name} - $counter / $dirsCount"
             processDirectory(it)
         }
         println "Loaded ${texts.size()} texts"
@@ -48,16 +49,9 @@ class NkjpProcessor {
         devData = texts[devOffset..<testOffset]
         testData = texts[testOffset..<texts.size()]
 
-        saveToFile(config.data.training.file as String, trainingData)
-        saveToFile(config.data.dev.file as String, devData)
-        saveToFile(config.data.test.file as String, testData)
-    }
-
-    private void saveToFile(String path, List data) {
-        def file = new File(path)
-        file.getParentFile().mkdirs()
-        file.createNewFile()
-        file.write(new JsonBuilder(data).toPrettyString())
+        saveJsonToFile(config.data.training.file as String, trainingData)
+        saveJsonToFile(config.data.dev.file as String, devData)
+        saveJsonToFile(config.data.test.file as String, testData)
     }
 
     private void processDirectory(File directory) {
