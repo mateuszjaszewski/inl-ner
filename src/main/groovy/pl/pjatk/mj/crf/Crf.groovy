@@ -32,7 +32,13 @@ class Crf {
         File trainingFile = prepareCrfSuiteFile(trainingTexts, true)
 
         println("CRF training...")
-        CrfTrainer.train(trainingFile.path, config.crf.model.file as String)
+        String modelFile = config.crf.model.file as String
+        String algorithm = config.crf.algorithm as String
+        String graphicalModel = config.crf.graphicalModel as String
+        Pair<String ,String>[] parameters = config.crf.properties.collect {
+            new Pair<>(it.getKey(), it.getValue())
+        }
+        CrfTrainer.train(trainingFile.path, modelFile, algorithm, graphicalModel, "UTF-8", parameters)
 
         trainingFile.delete()
     }

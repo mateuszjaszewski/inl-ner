@@ -16,6 +16,11 @@ data {
     }
 }
 crf {
+    algorithm = "arow"
+    graphicalModel = "crf1d"
+    properties = [
+          "max_iterations" : "1000"
+    ]
     model {
         file = "crf/crf.model"
     }

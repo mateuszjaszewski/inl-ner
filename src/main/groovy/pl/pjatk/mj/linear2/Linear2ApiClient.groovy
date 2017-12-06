@@ -12,7 +12,7 @@ class Linear2ApiClient {
 
     private static final API_URL = "http://ws.clarin-pl.eu"
     private static final PATH = "/nlprest2/base/process"
-    private static final LPMN = "any2txt|wcrft2({\"morfeusz2\":false})|liner2({\"model\":\"top9\"})"
+    private static final LPMN = "any2txt|wcrft2({\"morfeusz2\":true})|liner2({\"model\":\"top9\"})"
 
     private static Map TAG_MAP = [
             "nam_adj" : Tag.OTHER,
